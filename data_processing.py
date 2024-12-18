@@ -26,6 +26,7 @@ def corriger_csv(fichiers_csv):
                 'source_fichier': lambda x: ', '.join(set(x))  # Combine les sources de fichiers
             })
         )
+        
 
         # Étape 4 : Créer le fichier Excel
         fichier_excel = 'stock_consolidated.xlsx'
