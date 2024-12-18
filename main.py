@@ -4,6 +4,8 @@ from database_manager import creer_table_stocks, traiter_et_inserer_donnees
 from search import chercher_produits, afficher_contenu_table
 from report_generator import generer_rapport_csv
 import os
+import sqlite3
+
 print(f"INFO: Connexion à la base de données : {os.path.abspath('stock_manager.db')}")
 
 
@@ -28,12 +30,14 @@ def main():
             print("ERREUR: Échec de la consolidation des fichiers.")
 
     # Étape 2: Traitement et insertion des données
+    # Étape 2: Traitement et insertion des données
     if args.traiter:
         print("Étape 2: Traitement et insertion des données dans la base de données...")
         creer_table_stocks()
         try:
-            traiter_et_inserer_donnees(args.traiter)
-            print("INFO: Données traitées et insérées avec succès.")
+            with sqlite3.connect('stock_manager.db') as conn:
+                traiter_et_inserer_donnees(args.traiter, conn)
+                print("INFO: Données traitées et insérées avec succès.")
         except Exception as e:
             print(f"ERREUR: Problème lors du traitement des données : {e}")
 

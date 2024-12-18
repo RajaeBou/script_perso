@@ -7,31 +7,30 @@ DATABASE_NAME = "stock_manager.db"
 
 def generer_rapport_csv():
     """
-    Générer un rapport des stocks par catégorie au format CSV avec des journaux pour débogage.
+    Générer un rapport des stocks par catégorie au format CSV.
     """
     try:
-        conn = sqlite3.connect(DATABASE_NAME)
+        print("INFO: Connexion à la base de données...")
+        with sqlite3.connect(DATABASE_NAME) as conn:
+            print("INFO: Début de la génération du rapport.")
 
-        # Requête SQL pour regrouper par catégorie
-        query = """
-            SELECT categorie, SUM(quantite) AS total_quantite
-            FROM stocks
-            GROUP BY categorie
-        """
-        df = pd.read_sql_query(query, conn)
+            query = """
+                SELECT categorie, SUM(quantite) AS total_quantite
+                FROM stocks
+                GROUP BY categorie
+            """
+            print("INFO: Exécution de la requête SQL...")
+            df = pd.read_sql_query(query, conn)
 
-        # Affichage des résultats pour débogage
-        print("Résultats de la requête SQL :", df)
+            print("INFO: Résultats de la requête SQL :")
+            print(df)
 
-        # Vérification des données avant export
-        if df.empty:
-            print("Aucune donnée disponible pour générer le rapport CSV.")
-        else:
-            rapport_csv = 'rapport_stock.csv'
-            df.to_csv(rapport_csv, index=False, encoding='utf-8-sig', sep=';')
-            print(f"Rapport CSV généré avec succès : {rapport_csv}")
-
-        conn.close()
+            if df.empty:
+                print("Aucune donnée disponible pour générer le rapport CSV.")
+            else:
+                rapport_csv = 'rapport_stock.csv'
+                df.to_csv(rapport_csv, index=False, encoding='utf-8-sig', sep=';')
+                print(f"Rapport CSV généré avec succès : {rapport_csv}")
     except Exception as e:
         print(f"Erreur lors de la génération du rapport CSV : {e}")
 

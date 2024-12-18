@@ -24,7 +24,7 @@ def creer_table_stocks():
         print("INFO: Table 'stocks' créée ou déjà existante.")
 
 
-def traiter_et_inserer_donnees(fichier_consolide):
+def traiter_et_inserer_donnees(fichier_consolide, conn):
     """
     Traite un fichier Excel consolidé et insère les données dans la table 'stocks'.
     """
@@ -39,8 +39,7 @@ def traiter_et_inserer_donnees(fichier_consolide):
         data['nom_produit'] = data['nom_produit'].str.strip()
 
         # Insérer les données dans la base
-        with sqlite3.connect(DATABASE_NAME) as conn:
-            data.to_sql('stocks', conn, if_exists='append', index=False)
-            print(f"INFO: {len(data)} ligne(s) insérée(s) avec succès dans la table 'stocks'.")
+        data.to_sql('stocks', conn, if_exists='append', index=False)
+        print(f"INFO: {len(data)} ligne(s) insérée(s) avec succès dans la table 'stocks'.")
     except Exception as e:
         print(f"ERROR: Erreur lors de l'insertion des données : {e}")
