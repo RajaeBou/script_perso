@@ -1,15 +1,43 @@
 import pandas as pd
 from openpyxl import Workbook
 from openpyxl.styles import PatternFill, Font
-
+import os
 def corriger_csv(fichiers_csv):
     """
     Consolide plusieurs fichiers CSV en un seul fichier Excel en additionnant les quantités pour les mêmes 'id_produit'.
+
+    Préconditions :
+        - 'fichiers_csv' est une liste de chemins vers des fichiers CSV existants.
+        - Chaque fichier CSV doit contenir les colonnes suivantes :
+            * 'id_produit'
+            * 'nom_produit'
+            * 'categorie'
+            * 'quantite'
+            * 'prix_unitaire'
+            * 'date_ajout'
+
+    Postconditions :
+        - Un fichier Excel nommé 'stock_consolidated.xlsx' est généré dans le répertoire courant.
+        - Les données des fichiers CSV sont combinées :
+            * Les lignes avec le même 'id_produit' sont regroupées, et leurs quantités sont additionnées.
+            * La première date d'ajout (chronologiquement) est conservée.
+            * Les noms des fichiers sources sont combinés.
+
+    Raises :
+        - FileNotFoundError : Si un ou plusieurs fichiers dans 'fichiers_csv' n'existent pas.
+        - ValueError : Si les fichiers CSV ne contiennent pas les colonnes requises.
+        - Exception : Pour toute autre erreur survenue pendant le traitement ou l'écriture.
+
+    Returns :
+        - str : Le chemin du fichier Excel généré si la consolidation réussit.
+        - None : En cas d'échec.
     """
     try:
         # Étape 1 : Lire et combiner les fichiers CSV
         dataframes = []
         for fichier in fichiers_csv:
+            if not os.path.exists(fichier):
+                raise FileNotFoundError(f"Le fichier {fichier} n'existe pas.")
             df = pd.read_csv(fichier, encoding='utf-8')
             df['source_fichier'] = fichier  # Ajouter la source du fichier
             dataframes.append(df)
@@ -26,7 +54,6 @@ def corriger_csv(fichiers_csv):
                 'source_fichier': lambda x: ', '.join(set(x))  # Combine les sources de fichiers
             })
         )
-        
 
         # Étape 4 : Créer le fichier Excel
         fichier_excel = 'stock_consolidated.xlsx'
@@ -53,6 +80,10 @@ def corriger_csv(fichiers_csv):
         print(f"Fichier Excel consolidé créé : {fichier_excel}")
         return fichier_excel
 
+    except FileNotFoundError as fnfe:
+        print(f"ERREUR : {fnfe}")
+    except ValueError as ve:
+        print(f"ERREUR : Fichiers CSV invalides - {ve}")
     except Exception as e:
         print(f"Erreur lors de la consolidation des fichiers : {e}")
         return None
