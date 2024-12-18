@@ -6,12 +6,10 @@ DATABASE_NAME = 'stock_manager.db'
 
 def creer_table_stocks():
     """
-    Crée la table 'stocks' dans la base de données si elle n'existe pas.
+    Crée la table 'stocks' si elle n'existe pas déjà dans la base de données.
     """
-    try:
-        conn = sqlite3.connect(DATABASE_NAME)
-        cursor = conn.cursor()
-        cursor.execute('''
+    with sqlite3.connect(DATABASE_NAME) as conn:
+        conn.execute("""
             CREATE TABLE IF NOT EXISTS stocks (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 id_produit TEXT UNIQUE,
@@ -22,14 +20,9 @@ def creer_table_stocks():
                 date_ajout TEXT,
                 source_fichier TEXT
             )
-        ''')
-        conn.commit()
-        print("INFO: La table 'stocks' a été créée ou existe déjà.")
-    except sqlite3.Error as e:
-        print(f"ERROR: Erreur lors de la création de la table 'stocks' : {e}")
-    finally:
-        if conn:
-            conn.close()
+        """)
+        print("INFO: Table 'stocks' créée ou déjà existante.")
+
 
 def traiter_et_inserer_donnees(fichier_consolide):
     """
@@ -40,29 +33,14 @@ def traiter_et_inserer_donnees(fichier_consolide):
         return
 
     try:
-        # Lire les données en fonction du type de fichier
-        data = pd.read_excel(fichier_consolide, engine='openpyxl')
-        data['categorie'] = data['categorie'].astype(str).str.strip()  # Supprimer les espaces
-        data['nom_produit'] = data['nom_produit'].astype(str).str.strip()
+        # Lire les données depuis le fichier Excel
+        data = pd.read_excel(fichier_consolide, engine='openpyxl').drop_duplicates(subset=['id_produit'])
+        data['categorie'] = data['categorie'].str.strip()
+        data['nom_produit'] = data['nom_produit'].str.strip()
 
-        # Supprimer les doublons sur id_produit
-        data = data.drop_duplicates(subset=['id_produit'])
-
-        # Connexion à la base de données et insertion des données
-        conn = sqlite3.connect(DATABASE_NAME)
-        data.to_sql('stocks', conn, if_exists='append', index=False, dtype={
-            'id_produit': 'TEXT',
-            'nom_produit': 'TEXT',
-            'categorie': 'TEXT',
-            'quantite': 'INTEGER',
-            'prix_unitaire': 'REAL',
-            'date_ajout': 'TEXT',
-            'source_fichier': 'TEXT'
-        })
-        print("INFO: Données insérées avec succès dans la table 'stocks'.")
+        # Insérer les données dans la base
+        with sqlite3.connect(DATABASE_NAME) as conn:
+            data.to_sql('stocks', conn, if_exists='append', index=False)
+            print(f"INFO: {len(data)} ligne(s) insérée(s) avec succès dans la table 'stocks'.")
     except Exception as e:
         print(f"ERROR: Erreur lors de l'insertion des données : {e}")
-    finally:
-        if 'conn' in locals():
-            conn.close()
-

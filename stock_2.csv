@@ -1,4 +1,5 @@
 id_produit,nom_produit,categorie,quantite,prix_unitaire,date_ajout
-P007,Plafonnier,Éclairage,20,80.00,2024-02-20
-P004,Bureau,Meubles,10,250.00,2024-02-25
-P008,Tapis,Décoration,25,120.00,2024-03-01
+P003,Lampe,Éclairage,5,40.0,2024-01-05
+P004,Table,Meubles,8,200.0,2024-01-06
+P005,Tapis,Décoration,25,120.0,2024-01-07
+P006,Armoire,Meubles,10,300.0,2024-01-08
